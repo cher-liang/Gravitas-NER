@@ -1,1 +1,6 @@
-.venv/
+# Any directory starting with a dot
+**/\.*/
+# Except .github
+!.github/
+
+**/__pycache__

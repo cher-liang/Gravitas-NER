@@ -1,5 +1,5 @@
 import re
-from typing import List
+from typing import List, Tuple
 from dataclasses import dataclass, field
 
 import quantities as pq
@@ -42,7 +42,7 @@ class NER_EVAL:
         self.refQuants = parser.parse(refSentence)
         self.studQuants = parser.parse(studSentence)
 
-        self.refNoQuants = len(self.refQuants)
+        self.numRefQuants = len(self.refQuants)
 
     def eval(self):
         self._manual_eval()
@@ -52,8 +52,14 @@ class NER_EVAL:
 
         self._pq_eval(refCombinedQuant, studCombinedQuant)
 
-        # print(refCombinedQuant)
-        # print(studCombinedQuant)
+        if self.numRefQuants:
+            score = len(self.result.correct) / self.numRefQuants
+            summary = f"""{len(self.result.correct)}/{self.numRefQuants} [quantities/measurements/units] match(es) with reference answer. \nScore: {score:.3f}"""
+        else:
+            score = 1
+            summary = "No quantities/measurements/units detected in reference answer"
+
+        return score, summary, self.result
 
     def _manual_eval(self):
         entitiy_exclude = ["torque"]
@@ -75,7 +81,7 @@ class NER_EVAL:
                 ):
                     self.result.correct.append(sel_studQuant)
                     sel_refQuants.pop(idx)
-                    sel_studQuants.pop(idx)
+                    sel_studQuants.pop(idx2)
 
         self.result.ref_mismatch.extend(sel_refQuants)
         self.result.stud_mismatch.extend(sel_studQuants)
@@ -172,18 +178,14 @@ class NER_EVAL:
         # # ]
 
 
-test_sentence = "50 g of metal ball displaces 50 cm^3 of water resulting in a density of 1000 kg/m^3, another 90 g ball"
-test_sentence2 = "60 cm^3 of water is displaced when the 50g metal ball is submerged, the metal ball density is calculated to be 1000 kg/m^3"
+if __name__ == "__main__":
+    test_sentence = "50 g of metal ball displaces 50 cm^3 of water resulting in a density of 1000 kg/m^3, the second ball is 99% copper"
+    test_sentence2 = "60 cm^3 of water is displaced when the 50g metal ball is submerged, the metal ball density is calculated to be 1000 kg/m^3"
 
-eval = NER_EVAL(test_sentence, test_sentence2)
-eval.eval()
-print(f"Sentence 1: {test_sentence}")
-print(f"Sentence 2: {test_sentence2}")
-print(eval.result)
-# print(eval.correct)
-# print(eval.lack_of)
-# print(eval.wrong_value)
-# print(eval.irrelevant)
-#
-# eval = check_unit_of_measurement(test_sentence, test_sentence2)
-# print(f"The answer is {'correct' if eval else 'incorrect'}")
+    print(f"Reference answer :{test_sentence}")
+    print(f"Student answer: {test_sentence2}")
+
+    eval = NER_EVAL(test_sentence, test_sentence2)
+    score, summary, result = eval.eval()
+    print(summary)
+    print(result)
