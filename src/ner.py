@@ -1,5 +1,5 @@
 import re
-from typing import List, Tuple
+from typing import List
 from dataclasses import dataclass, field
 
 import quantities as pq
@@ -10,22 +10,14 @@ from quantulum3.classes import Quantity
 
 @dataclass
 class Result:
-    # confidence: float
     correct: List[Quantity] = field(default_factory=list)
     ref_mismatch: List[Quantity] = field(default_factory=list)
     stud_mismatch: List[Quantity] = field(default_factory=list)
-    # lack_of: List[Quantity] = field(default_factory=list)
-    # wrong_value: List[Quantity] = field(default_factory=list)
-    # irrelevant: List[Quantity] = field(default_factory=list)
 
     def __str__(self) -> str:
         str = f"Correct: {self.correct}\n"
         str += f"Reference Answer Mismatch: {self.ref_mismatch}\n"
         str += f"Student Answer Mismatch: {self.stud_mismatch}\n"
-        # str += f"Lack of: {self.lack_of}\n"
-        # str += f"Wrong value: {self.wrong_value}\n"
-        # str += f"Irrelevant/Wrong Unit: {self.irrelevant}\n"
-        # str += f"Confidence: {self.confidence}\n"
         return str
 
 
@@ -86,35 +78,6 @@ class NER_EVAL:
         self.result.ref_mismatch.extend(sel_refQuants)
         self.result.stud_mismatch.extend(sel_studQuants)
 
-        # # {unit:{value: obj}}
-        # refUnitDict = {}
-        # for obj in sel_refQuants:
-        #     # nested Dict
-        #     if obj.unit.name in refUnitDict.keys():
-        #         refUnitDict[obj.unit.name][obj.value] = obj
-        #         self.result.confidence = 0.5
-        #     else:
-        #         refUnitDict[obj.unit.name] = {obj.value: obj}
-        # # refUnitDict = {obj.unit.name: obj for obj in sel_refQuants}
-        #
-        # for studQuant in sel_studQuants:
-        #     if studQuant.unit.name in refUnitDict:
-        #         refQuants = refUnitDict[studQuant.unit.name]
-        #         if studQuant.value in refQuants:
-        #             # if studQuant.value == refQuant.value:
-        #             self.result.correct.append(studQuant)
-        #             refUnitDict.pop(studQuant.unit.name, None)
-        #         else:
-        #             self.result.wrong_value.append(studQuant)
-        #     else:
-        #         self.result.irrelevant.append(studQuant)
-        #
-        # for nestedDict in refUnitDict.values():
-        #     self.result.lack_of.extend(list(nestedDict.values()))
-        # # self.result.lack_of = [
-        # #     nestedDict.values() for nestedDict in refUnitDict.values()
-        # # ]
-
     def _convert_to_pq(self, quants: List[Quantity]) -> List[combinedQuantity]:
         for quant in quants:
             quant.unit.name = re.sub(r"square (\w+)", r"\1^2", quant.unit.name)
@@ -137,7 +100,7 @@ class NER_EVAL:
     ):
         for idx, pquant_1 in enumerate(refCombinedQuants):
             for idx2, pquant_2 in enumerate(studCombinedQuants):
-                if pquant_1.pQuant == pquant_2.pQuant:
+                if pquant_1.pQuant == round(pquant_2.pQuant,3):
                     refCombinedQuants.pop(idx)
                     studCombinedQuants.pop(idx2)
 
@@ -151,31 +114,6 @@ class NER_EVAL:
         self.result.stud_mismatch.extend(
             [studCombinedQuant.quant for studCombinedQuant in studCombinedQuants]
         )
-
-        # refUnitDict = {}
-        # for obj in refCombinedQuants:
-        #     if obj.quant.unit.name in refUnitDict.keys():
-        #         refUnitDict[obj.quant.unit.name][obj.quant.value] = obj.quant
-        #         self.result.confidence = 0.5
-        #     else:
-        #         refUnitDict[obj.quant.unit.name] = {obj.quant.value: obj.quant}
-        #
-        # for studQuant in studCombinedQuants:
-        #     if studQuant.quant.unit.name in refUnitDict:
-        #         refQuants = refUnitDict[studQuant.quant.unit.name]
-        #         if studQuant.quant.value in refQuants:
-        #             self.result.correct.append(studQuant.quant)
-        #             refQuants.pop(studQuant.quant.value, None)
-        #         else:
-        #             self.result.wrong_value.append(studQuant.quant)
-        #     else:
-        #         self.result.irrelevant.append(studQuant.quant)
-        #
-        # for nestedDict in refUnitDict.values():
-        #     self.result.lack_of.extend(list(nestedDict.values()))
-        # # self.result.lack_of = [
-        # #     list(nestedDict.values()) for nestedDict in refUnitDict.values()
-        # # ]
 
 
 if __name__ == "__main__":
