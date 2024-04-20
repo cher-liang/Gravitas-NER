@@ -100,7 +100,7 @@ class NER_EVAL:
     ):
         for idx, pquant_1 in enumerate(refCombinedQuants):
             for idx2, pquant_2 in enumerate(studCombinedQuants):
-                if pquant_1.pQuant == round(pquant_2.pQuant,3):
+                if round(pquant_1.pQuant,3) == round(pquant_2.pQuant,3):
                     refCombinedQuants.pop(idx)
                     studCombinedQuants.pop(idx2)
 
