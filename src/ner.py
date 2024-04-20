@@ -98,11 +98,15 @@ class NER_EVAL:
         refCombinedQuants: List[combinedQuantity],
         studCombinedQuants: List[combinedQuantity],
     ):
-        for idx, pquant_1 in enumerate(refCombinedQuants):
-            for idx2, pquant_2 in enumerate(studCombinedQuants):
+        copyRefCombinedQuants = refCombinedQuants.copy()
+        copyStudCombinedQuants = studCombinedQuants.copy()
+
+        for pquant_1 in copyRefCombinedQuants:
+            for pquant_2 in copyStudCombinedQuants:
                 if round(pquant_1.pQuant,3) == round(pquant_2.pQuant,3):
-                    refCombinedQuants.pop(idx)
-                    studCombinedQuants.pop(idx2)
+                # if pquant_1.pQuant == pquant_2.pQuant:
+                    refCombinedQuants.remove(pquant_1)
+                    studCombinedQuants.remove(pquant_2)
 
                     self.result.correct.append(pquant_2.quant)
 
@@ -117,8 +121,8 @@ class NER_EVAL:
 
 
 if __name__ == "__main__":
-    test_sentence = "50 g of metal ball displaces 50 cm^3 of water resulting in a density of 1000 kg/m^3, the second ball is 99% copper"
-    test_sentence2 = "60 cm^3 of water is displaced when the 50g metal ball is submerged, the metal ball density is calculated to be 1000 kg/m^3"
+    test_sentence = "The power rating is 600 W, 240 V. The resistance of the element is 96 ohm."
+    test_sentence2 = "The power rating = 600 W, 240 V. Resistance = 96 ohm."
 
     print(f"Reference answer :{test_sentence}")
     print(f"Student answer: {test_sentence2}")
